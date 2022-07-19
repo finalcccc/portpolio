@@ -12,7 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:amnong_profile/PageView/fetchProfile.dart';
 import 'package:amnong_profile/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'dart:io'as io;
+import 'dart:io' as io;
 
 class InsertProfile extends StatefulWidget {
   const InsertProfile({Key? key}) : super(key: key);
@@ -31,28 +31,28 @@ class _InsertProfileState extends State<InsertProfile> {
   var _fileBytes;
 
   Future<void> getMultipleImageInfos() async {
-
     var mediaData = await ImagePickerWeb.getImageInfo;
-    String? mimeType = mime(Path.basename(mediaData!.fileName??''));
-    html.File mediaFile = html.File(mediaData.data!.toList(), mediaData.fileName??'', {'type': mimeType});
+    String? mimeType = mime(Path.basename(mediaData!.fileName ?? ''));
+    html.File mediaFile = html.File(
+        mediaData.data!.toList(), mediaData.fileName ?? '', {'type': mimeType});
 
-    if (mediaFile != null) {
-      setState(() {
-        _cloudFile = mediaFile;
-        _fileBytes = mediaData.data;
-         uptoSt();
-      });
-    }
+    setState(() {
+      _cloudFile = mediaFile;
+      _fileBytes = mediaData.data;
+    });
   }
-  uptoSt()async{
-    Reference ref = await FirebaseStorage.instance
-        .ref('image')
-        .child("${_cloudFile!.name}");
-   await ref.putData(_fileBytes, SettableMetadata(contentType: 'image/png'));
+
+  Future<String> uptoSt() async {
+    Reference ref =
+        await FirebaseStorage.instance.ref('image').child(_cloudFile!.name);
+    await ref.putData(_fileBytes, SettableMetadata(contentType: 'image/png'));
     String url = await ref.getDownloadURL();
-   // String url = await ref.getDownloadURL();
+
+    // String url = await ref.getDownloadURL();
     print(url);
+    return url;
   }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,11 +71,16 @@ class _InsertProfileState extends State<InsertProfile> {
                 },
                 child: Column(
                   children: [
-                    _fileBytes != null ?Image.memory(_fileBytes,height: 100,width: 120,):
-                    CircleAvatar(
-                      radius: 30,
-                      backgroundColor: Colors.blue,
-                    ),
+                    _fileBytes != null
+                        ? Image.memory(
+                            _fileBytes,
+                            height: 100,
+                            width: 120,
+                          )
+                        : const CircleAvatar(
+                            radius: 30,
+                            backgroundColor: Colors.blue,
+                          ),
                   ],
                 ),
               ),
@@ -103,6 +108,7 @@ class _InsertProfileState extends State<InsertProfile> {
               ElevatedButton(
                   onPressed: () async {
                     List<userModel> allUser = await addUser(context);
+
                     Navigator.push(
                         context,
                         MaterialPageRoute(
@@ -124,8 +130,8 @@ class _InsertProfileState extends State<InsertProfile> {
         ));
   }
 
-
   Future<List<userModel>> addUser(context) async {
+    String images = await uptoSt();
     List<userModel> users = [];
     int random = await Random().nextInt(100);
     final user = userModel(
@@ -134,6 +140,7 @@ class _InsertProfileState extends State<InsertProfile> {
       tel: telController.text,
       birthday: birtdayController.text,
       description: descriptionController.text,
+      image: images,
     );
     final docUser =
         FirebaseFirestore.instance.collection('user').doc(random.toString());

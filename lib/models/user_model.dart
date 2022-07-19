@@ -8,13 +8,14 @@ class userModel {
   String birthday;
   String tel;
   String description;
-
+  String image;
   userModel({
     required this.id,
     required this.name,
     required this.tel,
     required this.description,
     required this.birthday,
+    required this.image,
   });
 
   Map<String, dynamic> tojson() {
@@ -24,6 +25,7 @@ class userModel {
       'tel': tel,
       'birthday': birthday,
       'description': description,
+      'image': image,
     };
   }
 
@@ -34,6 +36,7 @@ class userModel {
       tel: json['tel'],
       birthday: json['birthday'],
       description: json['description'],
+      image: json['image'],
     );
   }
 }
