@@ -4,6 +4,7 @@ import 'dart:math';
 import 'dart:html' as html;
 import 'dart:typed_data';
 
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:path/path.dart' as Path;
 import 'package:image_picker_web/image_picker_web.dart';
@@ -11,6 +12,7 @@ import 'package:flutter/material.dart';
 import 'package:amnong_profile/PageView/fetchProfile.dart';
 import 'package:amnong_profile/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'dart:io'as io;
 
 class InsertProfile extends StatefulWidget {
   const InsertProfile({Key? key}) : super(key: key);
@@ -25,6 +27,21 @@ class _InsertProfileState extends State<InsertProfile> {
   TextEditingController telController = TextEditingController();
   TextEditingController birtdayController = TextEditingController();
   TextEditingController descriptionController = TextEditingController();
+  html.File? _cloudFile;
+  var _fileBytes;
+
+  Future<void> getMultipleImageInfos() async {
+    var mediaData = await ImagePickerWeb.getImageInfo;
+    String? mimeType = mime(Path.basename(mediaData!.fileName??''));
+    html.File mediaFile = html.File(mediaData.data!.toList(), mediaData.fileName??'', {'type': mimeType});
+
+    if (mediaFile != null) {
+      setState(() {
+        _cloudFile = mediaFile;
+        _fileBytes = mediaData.data;
+      });
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -39,11 +56,16 @@ class _InsertProfileState extends State<InsertProfile> {
               const SizedBox(height: 20),
               InkWell(
                 onTap: () {
-                  imagePicker();
+                  getMultipleImageInfos();
                 },
-                child: const CircleAvatar(
-                  radius: 30,
-                  backgroundColor: Colors.blue,
+                child: Column(
+                  children: [
+                    _fileBytes != null ?Image.memory(_fileBytes,height: 100,width: 120,):
+                    CircleAvatar(
+                      radius: 30,
+                      backgroundColor: Colors.blue,
+                    ),
+                  ],
                 ),
               ),
               const SizedBox(height: 15),
@@ -91,42 +113,6 @@ class _InsertProfileState extends State<InsertProfile> {
         ));
   }
 
-  // Future<MediaInfo?> imagePicker() async {
-  //   MediaInfo? mediaInfo = await ImagePickerWeb.getImageInfo;
-  //   return mediaInfo;
-  // }
-
-  Future<void> getMultipleImageInfos() async {
-    List<Uint8List>? bytesFromPicker =
-        await ImagePickerWeb.getMultiImagesAsBytes();
-    var mediaData = await ImagePickerWeb.getImageInfo;
-    String? mimeType = mime(Path.basename(mediaData.fileName));
-    html.File mediaFile =
-        html.File(mediaData?.data, mediaData!.fileName, {'type': mimeType});
-    setState(() {});
-  }
-  //
-  // Future<Uri?> uploadFile(
-  //     MediaInfo mediaInfo, String ref, String fileName) async {
-  //   try {
-  //     String? mimeType = mime(Path.basename(mediaInfo.fileName));
-  //     final String? extension = extensionFromMime(mimeType!);
-  //     var metadata = FirebaseStorage.UploadMetadata(
-  //       contentType: mimeType,
-  //     );
-  //     fb.StorageReference storageReference =
-  //         fb.storage().ref(ref).child(fileName + ".$extension");
-  //
-  //     fb.UploadTaskSnapshot uploadTaskSnapshot =
-  //         await storageReference.put(mediaInfo.data, metadata).future;
-  //     Uri imageUri = await uploadTaskSnapshot.ref.getDownloadURL();
-  //     print("download url $imageUri");
-  //     return imageUri;
-  //   } catch (e) {
-  //     print("File Upload Error $e");
-  //     return null;
-  //   }
-  // }
 
   Future<List<userModel>> addUser(context) async {
     List<userModel> users = [];

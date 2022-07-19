@@ -2,6 +2,8 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'PageView/loginScreen.dart';
+import 'package:flutter/foundation.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -11,6 +13,7 @@ void main() async {
       appId: "1:658377314346:web:b00b5be6fda4b23d1df353",
       messagingSenderId: "658377314346",
       projectId: "amnong-profile",
+      storageBucket: "myapp.appspot.com",
     ),
   );
   runApp(const MyApp());
