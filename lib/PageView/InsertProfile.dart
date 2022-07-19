@@ -1,17 +1,16 @@
 // ignore_for_file: use_build_context_synchronously
 
-import 'dart:html';
 import 'dart:math';
+import 'dart:html' as html;
+import 'dart:typed_data';
 
+import 'package:mime_type/mime_type.dart';
+import 'package:path/path.dart' as Path;
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:flutter/material.dart';
 import 'package:amnong_profile/PageView/fetchProfile.dart';
 import 'package:amnong_profile/models/user_model.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-import 'package:flutter/material.dart';
-import 'package:image_picker_web/image_picker_web.dart';
-import 'dart:io';
-
-import 'package:path/path.dart' as p;
 
 class InsertProfile extends StatefulWidget {
   const InsertProfile({Key? key}) : super(key: key);
@@ -92,16 +91,26 @@ class _InsertProfileState extends State<InsertProfile> {
         ));
   }
 
-  Future<MediaInfo?> imagePicker() async {
-    MediaInfo? mediaInfo = await ImagePickerWeb.getImageInfo;
-    return mediaInfo;
+  // Future<MediaInfo?> imagePicker() async {
+  //   MediaInfo? mediaInfo = await ImagePickerWeb.getImageInfo;
+  //   return mediaInfo;
+  // }
+
+  Future<void> getMultipleImageInfos() async {
+    List<Uint8List>? bytesFromPicker =
+        await ImagePickerWeb.getMultiImagesAsBytes();
+    var mediaData = await ImagePickerWeb.getImageInfo;
+    String? mimeType = mime(Path.basename(mediaData.fileName));
+    html.File mediaFile =
+        html.File(mediaData?.data, mediaData!.fileName, {'type': mimeType});
+    setState(() {});
   }
   //
-  // Future<Uri> uploadFile(
+  // Future<Uri?> uploadFile(
   //     MediaInfo mediaInfo, String ref, String fileName) async {
   //   try {
-  //     String mimeType = mime(Path.basename(mediaInfo.fileName));
-  //     final String extension = extensionFromMime(mimeType);
+  //     String? mimeType = mime(Path.basename(mediaInfo.fileName));
+  //     final String? extension = extensionFromMime(mimeType!);
   //     var metadata = FirebaseStorage.UploadMetadata(
   //       contentType: mimeType,
   //     );
@@ -134,11 +143,11 @@ class _InsertProfileState extends State<InsertProfile> {
     await docUser.set(user.tojson()).then((value) async {
       QuerySnapshot<Map<String, dynamic>> rfn =
           await FirebaseFirestore.instance.collection('user').get();
-      rfn.docs.forEach((element) {
+      for (var element in rfn.docs) {
         userModel authUser = userModel.fromJson(element.data());
         users.add(authUser);
         print(authUser.name);
-      });
+      }
     });
     return users;
   }
