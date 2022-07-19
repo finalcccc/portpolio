@@ -31,6 +31,7 @@ class _InsertProfileState extends State<InsertProfile> {
   var _fileBytes;
 
   Future<void> getMultipleImageInfos() async {
+
     var mediaData = await ImagePickerWeb.getImageInfo;
     String? mimeType = mime(Path.basename(mediaData!.fileName??''));
     html.File mediaFile = html.File(mediaData.data!.toList(), mediaData.fileName??'', {'type': mimeType});
@@ -39,8 +40,18 @@ class _InsertProfileState extends State<InsertProfile> {
       setState(() {
         _cloudFile = mediaFile;
         _fileBytes = mediaData.data;
+         uptoSt();
       });
     }
+  }
+  uptoSt()async{
+    Reference ref = await FirebaseStorage.instance
+        .ref('image')
+        .child("${_cloudFile!.name}");
+   await ref.putData(_fileBytes, SettableMetadata(contentType: 'image/png'));
+    String url = await ref.getDownloadURL();
+   // String url = await ref.getDownloadURL();
+    print(url);
   }
   @override
   Widget build(BuildContext context) {

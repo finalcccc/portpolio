@@ -88,9 +88,4 @@ class _LoginScreenState extends State<LoginScreen> {
     );
   }
 
-  // Future<void> addData() async {
-  //   FirebaseFirestore.instance
-  //       .collection('users')
-  //       .add({'name': "amnong", 'address': 'hjdjfjjdjf'});
-  // }
 }
