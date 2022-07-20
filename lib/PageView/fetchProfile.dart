@@ -1,3 +1,5 @@
+// ignore_for_file: no_logic_in_create_state
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart';
@@ -39,7 +41,10 @@ class _FetchProfileState extends State<FetchProfile> {
                       children: [
                         CircleAvatar(
                           radius: 60,
-                          child: Image.network(user[index].image.toString()),
+                          child: Image.network(
+                            user[index].image.toString(),
+                            fit: BoxFit.fitHeight,
+                          ),
                         ),
                         const SizedBox(width: 20),
                         Column(
@@ -74,7 +79,7 @@ class _FetchProfileState extends State<FetchProfile> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('title'),
+          title: const Text('title'),
           content: SingleChildScrollView(
             child: Column(
               children: <Widget>[
