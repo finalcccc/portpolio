@@ -1,8 +1,11 @@
 // ignore_for_file: use_build_context_synchronously
 
+import 'dart:math';
+
 import 'package:amnong_profile/PageView/InsertProfile.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -16,8 +19,18 @@ class _LoginScreenState extends State<LoginScreen> {
     try {
       UserCredential userCredential = await FirebaseAuth.instance
           .createUserWithEmailAndPassword(email: _email!, password: _password!);
+      Fluttertoast.showToast(
+        msg: 'You have create a nue user',
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.blue,
+      );
       print('User: $userCredential');
     } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.message!,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.blue,
+      );
       print('Error: $e');
     }
   }
@@ -30,6 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
       Navigator.push(context,
           MaterialPageRoute(builder: (context) => const InsertProfile()));
     } on FirebaseAuthException catch (e) {
+      Fluttertoast.showToast(
+        msg: e.message!,
+        gravity: ToastGravity.BOTTOM,
+        backgroundColor: Colors.blue,
+      );
       print('Error: $e');
     }
   }
@@ -87,5 +105,4 @@ class _LoginScreenState extends State<LoginScreen> {
       )),
     );
   }
-
 }

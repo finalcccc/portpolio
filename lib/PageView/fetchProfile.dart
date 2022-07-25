@@ -1,10 +1,14 @@
-// ignore_for_file: no_logic_in_create_state
+// ignore_for_file: no_logic_in_create_state, use_build_context_synchronously
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
-import 'package:path/path.dart';
-
+import 'package:image_picker_web/image_picker_web.dart';
+import 'package:mime_type/mime_type.dart';
 import '../models/user_model.dart';
+import 'dart:html' as html;
+import 'dart:io' as io;
+import 'package:path/path.dart' as Path;
 
 class FetchProfile extends StatefulWidget {
   List<userModel> user;
@@ -20,6 +24,37 @@ class _FetchProfileState extends State<FetchProfile> {
   _FetchProfileState(this.user) {
     user = this.user;
   }
+
+  html.File? _cloudFile;
+  var _fileBytes;
+
+  Future<void> getMultipleImageInfos() async {
+    var mediaData = await ImagePickerWeb.getImageInfo;
+    String? mimeType = mime(Path.basename(mediaData!.fileName ?? ''));
+    html.File mediaFile = html.File(
+        mediaData.data!.toList(), mediaData.fileName ?? '', {'type': mimeType});
+
+    setState(() {
+      _cloudFile = mediaFile;
+      _fileBytes = mediaData.data;
+    });
+  }
+
+  Future<String> uptoSt(userModel users) async {
+    List<String> imageName;
+    imageName = await users.image.split('/');
+    imageName = await imageName[7].split('F');
+    imageName = await imageName[1].split('?');
+    print(imageName);
+    print('=====================================================');
+    Reference ref = await FirebaseStorage.instance
+        .ref('image')
+        .child(imageName[0].toString());
+    await ref.putData(_fileBytes, SettableMetadata(contentType: 'image/png'));
+    String url = await ref.getDownloadURL();
+    return url;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -32,19 +67,19 @@ class _FetchProfileState extends State<FetchProfile> {
             itemBuilder: (BuildContext context, int index) {
               print(user[index].image);
               return SafeArea(
-                  child: Center(
+                  child: SingleChildScrollView(
+                scrollDirection: Axis.horizontal,
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     const SizedBox(height: 20),
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 60,
-                          child: Image.network(
-                            user[index].image.toString(),
-                            fit: BoxFit.fitHeight,
-                          ),
+                        Image.network(
+                          user[index].image,
+                          fit: BoxFit.cover,
+                          width: 100,
+                          height: 100,
                         ),
                         const SizedBox(width: 20),
                         Column(
@@ -55,8 +90,6 @@ class _FetchProfileState extends State<FetchProfile> {
                             Text(user[index].tel),
                             Text(user[index].birthday),
                             Text(user[index].description),
-                            const Text(
-                                'ສະບາຍດີ ຂ້ອຍຊື່ ທ້າວ ອຳນົງ ໄຊຈື່ວ່າງ ຂ້ອຍມາຈາກແຂວງຫົວພັນ'),
                             const SizedBox(height: 60),
                             ElevatedButton(
                                 onPressed: () {
@@ -79,43 +112,76 @@ class _FetchProfileState extends State<FetchProfile> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('title'),
+          title: const Text('ແກ້ໄຂຂໍ້ມູນ'),
+          titleTextStyle:
+              const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
           content: SingleChildScrollView(
-            child: Column(
-              children: <Widget>[
-                TextFormField(
-                  initialValue: users.name,
-                  onChanged: (value) {
-                    users.name = value.trim();
-                  },
-                ),
-                TextFormField(
-                  initialValue: users.tel,
-                  onChanged: (value) {
-                    users.tel = value.trim();
-                  },
-                ),
-                TextFormField(
-                  initialValue: users.birthday,
-                  onChanged: (value) {
-                    users.birthday = value.trim();
-                  },
-                ),
-                TextFormField(
-                  initialValue: users.description,
-                  onChanged: (value) {
-                    users.description = value.trim();
-                  },
-                ),
-              ],
-            ),
-          ),
+              child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Column(
+                children: [
+                  InkWell(
+                    child: _fileBytes != null
+                        ? Image.memory(
+                            _fileBytes,
+                            height: 100,
+                            width: 120,
+                          )
+                        : Image.network(
+                            users.image,
+                            width: 100,
+                            height: 100,
+                          ),
+                    onTap: () async {
+                      await getMultipleImageInfos();
+                      Navigator.pop(context);
+                      _showMyDialog(users, context);
+                    },
+                  )
+                ],
+              ),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: <Widget>[
+                  TextFormField(
+                    initialValue: users.name,
+                    onChanged: (value) {
+                      users.name = value.trim();
+                    },
+                  ),
+                  TextFormField(
+                    initialValue: users.tel,
+                    onChanged: (value) {
+                      users.tel = value.trim();
+                    },
+                  ),
+                  TextFormField(
+                    initialValue: users.birthday,
+                    onChanged: (value) {
+                      users.birthday = value.trim();
+                    },
+                  ),
+                  TextFormField(
+                    initialValue: users.description,
+                    onChanged: (value) {
+                      users.description = value.trim();
+                    },
+                  ),
+                ],
+              ),
+            ],
+          )),
           actions: <Widget>[
             TextButton(
               child: const Center(
-                child: Text('Approve'),
+                child: Text(
+                  'ບັນທຶກ',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
               ),
-              onPressed: () {
+              onPressed: () async {
+                users.image = await uptoSt(users);
                 FirebaseFirestore.instance
                     .collection('user')
                     .doc(users.id)
@@ -128,7 +194,6 @@ class _FetchProfileState extends State<FetchProfile> {
                     userModel authUser =
                         await userModel.fromJson(element.data());
                     user.add(authUser);
-                    print(authUser.name);
                   });
                 });
                 setState(() {

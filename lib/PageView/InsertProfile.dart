@@ -2,8 +2,6 @@
 
 import 'dart:math';
 import 'dart:html' as html;
-import 'dart:typed_data';
-
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:mime_type/mime_type.dart';
 import 'package:path/path.dart' as Path;
@@ -108,7 +106,6 @@ class _InsertProfileState extends State<InsertProfile> {
               ElevatedButton(
                   onPressed: () async {
                     List<userModel> allUser = await addUser(context);
-
                     Navigator.push(
                         context,
                         MaterialPageRoute(

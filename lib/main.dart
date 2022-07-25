@@ -2,9 +2,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
 import 'PageView/InsertProfile.dart';
-import 'PageView/loginScreen.dart';
 import 'package:flutter/foundation.dart';
-
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -16,8 +14,7 @@ void main() async {
         storageBucket: "kkkkk-1eca5.appspot.com",
         messagingSenderId: "946042886688",
         appId: "1:946042886688:web:28e1bb880d84d241c93a45",
-        measurementId: "G-118PRTW1JE"
-    ),
+        measurementId: "G-118PRTW1JE"),
   );
   runApp(const MyApp());
 }
@@ -31,7 +28,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home:  InsertProfile(),
+      home: InsertProfile(),
     );
   }
 }
